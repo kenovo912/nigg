@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Loader from './Loader';
 import { UploadIcon } from './icons/UploadIcon';
@@ -19,13 +20,15 @@ const WebPToPNGConverter: React.FC = () => {
 
   useEffect(() => {
     return () => {
-      conversionProcessRef.current.forEach(timerId => clearTimeout(timerId as number));
+      // FIX: Use a single clear function as clearTimeout and clearInterval are interchangeable for number IDs in browsers.
+      conversionProcessRef.current.forEach(clearTimeout);
     };
   }, []);
   
   useEffect(() => {
     if (file) {
-      const timer = setTimeout(() => setFileInfoVisible(true), 10);
+      // FIX: Use window.setTimeout to ensure it returns a number, not NodeJS.Timeout.
+      const timer = window.setTimeout(() => setFileInfoVisible(true), 10);
       return () => clearTimeout(timer);
     } else {
       setFileInfoVisible(false);
@@ -37,7 +40,8 @@ const WebPToPNGConverter: React.FC = () => {
       if (selectedFile.type !== 'image/webp') {
         setInlineError('Unsupported file type. Please upload a .webp file.');
         setDropError(true);
-        setTimeout(() => { setDropError(false); setInlineError(null); }, 2000);
+        // FIX: Use window.setTimeout to ensure it returns a number, not NodeJS.Timeout.
+        window.setTimeout(() => { setDropError(false); setInlineError(null); }, 2000);
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
@@ -63,10 +67,12 @@ const WebPToPNGConverter: React.FC = () => {
     if (!file) return;
     setIsLoading(true);
 
-    const progressInterval = setInterval(() => setProgress(prev => Math.min(prev + Math.floor(Math.random() * 10) + 5, 100)), 200);
+    // FIX: Use window.setInterval to ensure it returns a number, not NodeJS.Timeout.
+    const progressInterval = window.setInterval(() => setProgress(prev => Math.min(prev + Math.floor(Math.random() * 10) + 5, 100)), 200);
     conversionProcessRef.current.push(progressInterval);
 
-    setTimeout(() => {
+    // FIX: Use window.setTimeout to ensure it returns a number, not NodeJS.Timeout.
+    const timeoutId = window.setTimeout(() => {
       clearInterval(progressInterval);
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -91,10 +97,12 @@ const WebPToPNGConverter: React.FC = () => {
       reader.onerror = () => { setError("Failed to read the file."); setIsLoading(false); };
       reader.readAsDataURL(file);
     }, 2000);
+    conversionProcessRef.current.push(timeoutId);
   }, [file]);
   
   const handleCancel = () => {
-    conversionProcessRef.current.forEach(timerId => clearTimeout(timerId as number));
+    // FIX: Use a single clear function as clearTimeout and clearInterval are interchangeable for number IDs in browsers.
+    conversionProcessRef.current.forEach(clearTimeout);
     handleClear();
   };
 

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Loader from './Loader';
 import { UploadIcon } from './icons/UploadIcon';
@@ -21,16 +22,15 @@ const PDFOCR: React.FC = () => {
 
   useEffect(() => {
     return () => {
-      processRef.current.forEach(timerId => {
-          if (typeof timerId === 'number') clearTimeout(timerId);
-          else clearInterval(timerId);
-      });
+      // FIX: Use a single clear function as clearTimeout and clearInterval are interchangeable for number IDs in browsers.
+      processRef.current.forEach(clearTimeout);
     };
   }, []);
   
   useEffect(() => {
     if (file) {
-      const timer = setTimeout(() => setFileInfoVisible(true), 10);
+      // FIX: Use window.setTimeout to ensure it returns a number, not NodeJS.Timeout.
+      const timer = window.setTimeout(() => setFileInfoVisible(true), 10);
       return () => clearTimeout(timer);
     } else {
       setFileInfoVisible(false);
@@ -38,10 +38,8 @@ const PDFOCR: React.FC = () => {
   }, [file]);
   
   const clearProcesses = () => {
-     processRef.current.forEach(timerId => {
-        if (typeof timerId === 'number') clearTimeout(timerId);
-        else clearInterval(timerId);
-    });
+     // FIX: Use a single clear function as clearTimeout and clearInterval are interchangeable for number IDs in browsers.
+     processRef.current.forEach(clearTimeout);
     processRef.current = [];
   }
 
@@ -50,7 +48,8 @@ const PDFOCR: React.FC = () => {
       if (selectedFile.type !== 'application/pdf') {
         setInlineError('Unsupported file type. Please upload a .pdf file.');
         setDropError(true);
-        setTimeout(() => {
+        // FIX: Use window.setTimeout to ensure it returns a number, not NodeJS.Timeout.
+        window.setTimeout(() => {
             setDropError(false);
             setInlineError(null);
         }, 2000);
@@ -79,20 +78,24 @@ const PDFOCR: React.FC = () => {
     if (!file) return;
     setIsLoading(true);
 
-    const progressInterval = setInterval(() => setProgress(prev => Math.min(prev + Math.floor(Math.random() * 10) + 5, 95)), 250);
+    // FIX: Use window.setInterval to ensure it returns a number, not NodeJS.Timeout.
+    const progressInterval = window.setInterval(() => setProgress(prev => Math.min(prev + Math.floor(Math.random() * 10) + 5, 95)), 250);
     processRef.current.push(progressInterval);
     
-    const conversionTimeout = setTimeout(() => {
+    // FIX: Use window.setTimeout to ensure it returns a number, not NodeJS.Timeout.
+    const conversionTimeout = window.setTimeout(() => {
       clearInterval(progressInterval);
       setProgress(100);
       setIsLoading(false);
       setIsPreparing(true);
       setCountdown(5);
 
-      const countdownInterval = setInterval(() => setCountdown(c => c - 1), 1000);
+      // FIX: Use window.setInterval to ensure it returns a number, not NodeJS.Timeout.
+      const countdownInterval = window.setInterval(() => setCountdown(c => c - 1), 1000);
       processRef.current.push(countdownInterval);
 
-      const prepareTimeout = setTimeout(() => {
+      // FIX: Use window.setTimeout to ensure it returns a number, not NodeJS.Timeout.
+      const prepareTimeout = window.setTimeout(() => {
         clearInterval(countdownInterval);
         setIsPreparing(false);
         const textContent = `Simulated OCR result for ${file.name}.\n\nThis is where the extracted text from the PDF would appear. Real OCR requires a powerful backend service.`;

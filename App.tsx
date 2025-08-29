@@ -27,6 +27,8 @@ import WebsiteToPNG from './components/WebsiteToPNG';
 import WebsiteToJPG from './components/WebsiteToJPG';
 import CreateArchive from './components/CreateArchive';
 import ExtractArchive from './components/ExtractArchive';
+import YouTubeToShorts from './components/YouTubeToShorts';
+import SpotifyDownloader from './components/SpotifyDownloader';
 
 // Explicitly define components that are already implemented
 const implementedTools: Record<string, React.FC> = {
@@ -50,6 +52,8 @@ const implementedTools: Record<string, React.FC> = {
   websiteToJpg: WebsiteToJPG,
   createArchive: CreateArchive,
   extractArchive: ExtractArchive,
+  youtubeToShorts: YouTubeToShorts,
+  spotifyDownloader: SpotifyDownloader,
 };
 
 // Dynamically generate the full list of tool components
@@ -65,13 +69,33 @@ const toolComponents = Object.values(toolsConfig)
     return acc;
   }, {} as Record<string, React.FC>);
 
+const VAPID_PUBLIC_KEY = 'BEU9x4-1iBp7uL2laKBckxwO7R-MuNEJJ1_iPezekLQcV3mLcKPPh9Uw5YZQOLgNYYft0v6PlLAzp8vJsI1u-eQ';
+
+// Helper function to convert VAPID key
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 
 const App: React.FC = () => {
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [activeTool, setActiveTool] = useState<Tool>('summarizer');
+  const [activeTool, setActiveTool] = useState<Tool>('youtubeToShorts');
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ email: string } | null>(null);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
 
   useEffect(() => {
     // Simulate initial asset loading
@@ -94,6 +118,53 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
+  // Effect for Service Worker and Push Notifications
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(swReg => {
+          console.log('Service Worker is registered', swReg);
+          swReg.pushManager.getSubscription().then(subscription => {
+            if (subscription) {
+              setIsSubscribed(true);
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Service Worker Error', error);
+          setSubscriptionError('Failed to register service worker for notifications.');
+        });
+    }
+  }, []);
+  
+  const subscribeToPushNotifications = async () => {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            setSubscriptionError('Push notification permission denied.');
+            alert('You have denied notification permissions. To enable them, please go to your browser settings.');
+            return;
+        }
+
+        const swReg = await navigator.serviceWorker.ready;
+        const subscription = await swReg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        });
+
+        console.log('User is subscribed:', subscription);
+        // In a real application, you would send this subscription object to your backend server.
+        // Example: await fetch('/api/subscribe', { method: 'POST', body: JSON.stringify(subscription), ... });
+        
+        setIsSubscribed(true);
+        setSubscriptionError(null);
+        alert('Successfully subscribed to notifications!');
+    } catch (error) {
+        console.error('Failed to subscribe the user: ', error);
+        setSubscriptionError('Failed to subscribe to push notifications. See console for details.');
+    }
+};
+
   const toggleDarkMode = () => setIsDarkMode(prevMode => !prevMode);
 
   const ActiveToolComponent = toolComponents[activeTool] || TextSummarizer;
@@ -110,6 +181,8 @@ const App: React.FC = () => {
         user={currentUser}
         onLoginClick={() => setAuthModalOpen(true)}
         onLogout={() => setCurrentUser(null)}
+        isSubscribed={isSubscribed}
+        onSubscribe={subscribeToPushNotifications}
       />
       
       {isAuthModalOpen && (
@@ -124,6 +197,12 @@ const App: React.FC = () => {
 
       <main className="flex-grow container mx-auto px-4 py-8">
         <ToolNavigation activeTool={activeTool} setActiveTool={setActiveTool} />
+        {subscriptionError && (
+             <div className="mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                <p className="font-bold">Notification Status</p>
+                <p>{subscriptionError}</p>
+             </div>
+        )}
         <div className="mt-8">
             <ActiveToolComponent />
         </div>

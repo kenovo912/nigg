@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Loader from './Loader';
 import { DownloadIcon } from './icons/DownloadIcon';
@@ -19,7 +20,8 @@ const WebsiteToPDF: React.FC = () => {
   }, []);
 
   const clearProcesses = () => {
-    processRef.current.forEach(timerId => clearTimeout(timerId as number));
+    // FIX: Use a single clear function as clearTimeout and clearInterval are interchangeable for number IDs in browsers.
+    processRef.current.forEach(clearTimeout);
     processRef.current = [];
   };
 
@@ -36,20 +38,24 @@ const WebsiteToPDF: React.FC = () => {
     setDownloadUrl(null);
     setProgress(0);
 
-    const progressInterval = setInterval(() => setProgress(prev => Math.min(prev + Math.floor(Math.random() * 10) + 5, 95)), 250);
+    // FIX: Use window.setInterval to ensure it returns a number, not NodeJS.Timeout.
+    const progressInterval = window.setInterval(() => setProgress(prev => Math.min(prev + Math.floor(Math.random() * 10) + 5, 95)), 250);
     processRef.current.push(progressInterval);
 
-    const captureTimeout = setTimeout(() => {
+    // FIX: Use window.setTimeout to ensure it returns a number, not NodeJS.Timeout.
+    const captureTimeout = window.setTimeout(() => {
       clearInterval(progressInterval);
       setProgress(100);
       setIsLoading(false);
       setIsPreparing(true);
       setCountdown(5);
 
-      const countdownInterval = setInterval(() => setCountdown(c => c - 1), 1000);
+      // FIX: Use window.setInterval to ensure it returns a number, not NodeJS.Timeout.
+      const countdownInterval = window.setInterval(() => setCountdown(c => c - 1), 1000);
       processRef.current.push(countdownInterval);
 
-      const prepareTimeout = setTimeout(() => {
+      // FIX: Use window.setTimeout to ensure it returns a number, not NodeJS.Timeout.
+      const prepareTimeout = window.setTimeout(() => {
         clearInterval(countdownInterval);
         setIsPreparing(false);
         const pdfContent = `This is a simulated PDF of the website: ${url}`;

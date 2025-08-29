@@ -15,7 +15,9 @@ export type Tool =
     // Web Capture
     'websiteToPdf' | 'websiteToPng' | 'websiteToJpg' |
     // Archives
-    'createArchive' | 'extractArchive';
+    'createArchive' | 'extractArchive' |
+    // Online Media
+    'youtubeToShorts' | 'spotifyDownloader';
 
 interface ToolNavigationProps {
   activeTool: Tool;
@@ -30,6 +32,13 @@ type ToolsConfig = {
 };
 
 export const toolsConfig: ToolsConfig = {
+    "Online Media": {
+        icon: "🎬",
+        tools: {
+            youtubeToShorts: "YouTube to Shorts",
+            spotifyDownloader: "Spotify Downloader",
+        }
+    },
     "AI Tools": {
         icon: "✨",
         tools: {

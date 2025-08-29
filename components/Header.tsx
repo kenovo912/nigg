@@ -2,6 +2,7 @@ import React from 'react';
 import { SunIcon } from './icons/SunIcon';
 import { MoonIcon } from './icons/MoonIcon';
 import { UserIcon } from './icons/UserIcon';
+import { BellIcon } from './icons/BellIcon';
 
 interface HeaderProps {
   isDarkMode: boolean;
@@ -9,9 +10,11 @@ interface HeaderProps {
   user: { email: string } | null;
   onLoginClick: () => void;
   onLogout: () => void;
+  isSubscribed: boolean;
+  onSubscribe: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode, user, onLoginClick, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode, user, onLoginClick, onLogout, isSubscribed, onSubscribe }) => {
   return (
     <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-20">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -45,6 +48,17 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode, user, onLog
               Login / Sign Up
             </button>
           )}
+
+          <button
+            onClick={onSubscribe}
+            disabled={isSubscribed}
+            className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed relative"
+            aria-label="Subscribe to notifications"
+            title={isSubscribed ? "You are subscribed to notifications" : "Subscribe to notifications"}
+          >
+            <BellIcon />
+            {isSubscribed && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-800"></span>}
+          </button>
 
           <button
             onClick={toggleDarkMode}

@@ -17,8 +17,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLoginSuccess }) => {
         setError("Please enter both email and password.");
         return;
     }
-    // This is a simulated login. In a real app, you would call Firebase Auth here.
-    // e.g., firebase.auth().signInWithEmailAndPassword(email, password)
+    // This is a simulated login.
     setError('');
     console.log(`Simulating ${isLogin ? 'login' : 'sign up'} for ${email}`);
     onLoginSuccess(email);
@@ -33,7 +32,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLoginSuccess }) => {
         </div>
         
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
-          This is a simulated auth screen. Any valid email/password will work.
+          Simulated login: Any valid email/password will work.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -61,9 +60,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLoginSuccess }) => {
             <hr className="flex-grow border-t dark:border-gray-600" /><span className="mx-4 text-xs text-gray-500">OR</span><hr className="flex-grow border-t dark:border-gray-600" />
         </div>
         
-        <div className="space-y-2">
-            <button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Continue with Google</button>
-            <button className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Continue with Phone</button>
+        <div className="space-y-3">
+            <button disabled className="w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg opacity-50 cursor-not-allowed" title="Firebase integration required for this feature.">Continue with Google</button>
+            <button disabled className="w-full bg-gray-700 text-white font-bold py-2 px-4 rounded-lg opacity-50 cursor-not-allowed" title="Firebase integration required for this feature.">Continue with Phone</button>
+            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                Google & Phone login require backend configuration (Firebase) and are disabled in this demo.
+            </p>
         </div>
 
       </div>
