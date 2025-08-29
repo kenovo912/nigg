@@ -11,7 +11,8 @@ const WebsiteToPNG: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
   const [isPreparing, setIsPreparing] = useState(false);
   const [countdown, setCountdown] = useState(5);
-  const processRef = useRef<Array<NodeJS.Timeout | number>>([]);
+  // FIX: Replace NodeJS.Timeout with number for browser compatibility.
+  const processRef = useRef<number[]>([]);
 
   useEffect(() => {
     return () => clearProcesses();

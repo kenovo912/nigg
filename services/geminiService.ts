@@ -1,12 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 
+// This will be undefined in a browser environment like GitHub Pages unless injected by a build tool.
 const API_KEY = process.env.API_KEY;
 
-if (!API_KEY) {
-  throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+// Initialize ai, but it could be null if API_KEY is missing. This prevents the app from crashing on load.
+const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -20,13 +18,25 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+/**
+ * Checks if the GoogleGenAI instance was initialized.
+ * Throws an error if the API key is missing.
+ */
+const ensureAiInitialized = () => {
+    if (!ai) {
+        throw new Error("API Key is not configured. AI features are unavailable. Please ensure your environment variables are set correctly for your deployment.");
+    }
+}
+
 export const summarizeText = async (text: string): Promise<string> => {
+  ensureAiInitialized();
   if (!text) {
     throw new Error("Input text cannot be empty.");
   }
 
   try {
-    const response = await ai.models.generateContent({
+    // The '!' non-null assertion is safe here because ensureAiInitialized would have thrown an error if ai was null.
+    const response = await ai!.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `Summarize the following text concisely. Focus on the main points and key information. Provide the summary as a few clear paragraphs or bullet points if appropriate. Text to summarize:\n\n---\n\n${text}`,
     });
@@ -34,7 +44,6 @@ export const summarizeText = async (text: string): Promise<string> => {
     return response.text;
   } catch (error) {
     console.error("Error calling Gemini API:", error);
-    // Provide a more user-friendly error message
     if (error instanceof Error && error.message.includes('API key not valid')) {
          throw new Error("The API key is invalid. Please check your configuration.");
     }
@@ -43,6 +52,7 @@ export const summarizeText = async (text: string): Promise<string> => {
 };
 
 export const transcribeAudio = async (audioFile: File): Promise<string> => {
+  ensureAiInitialized();
   if (!audioFile) {
     throw new Error("Audio file is required.");
   }
@@ -61,7 +71,7 @@ export const transcribeAudio = async (audioFile: File): Promise<string> => {
       text: "Transcribe this audio.",
     };
 
-    const response = await ai.models.generateContent({
+    const response = await ai!.models.generateContent({
       model: "gemini-2.5-flash",
       contents: { parts: [audioPart, textPart] },
     });
@@ -77,12 +87,13 @@ export const transcribeAudio = async (audioFile: File): Promise<string> => {
 };
 
 export const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
+  ensureAiInitialized();
   if (!text) {
     throw new Error("Input text cannot be empty.");
   }
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await ai!.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `Translate the following text from ${sourceLang} to ${targetLang}:\n\n---\n\n${text}`,
     });

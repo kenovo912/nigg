@@ -16,7 +16,8 @@ const MP4ToMP3Converter: React.FC = () => {
   const [isPreparing, setIsPreparing] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const processRef = useRef<Array<NodeJS.Timeout | number>>([]);
+  // FIX: Replace NodeJS.Timeout with number for browser compatibility.
+  const processRef = useRef<number[]>([]);
 
   useEffect(() => {
     return () => {

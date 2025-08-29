@@ -14,7 +14,8 @@ const WebPToPNGConverter: React.FC = () => {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const conversionProcessRef = useRef<Array<NodeJS.Timeout | number>>([]);
+  // FIX: Replace NodeJS.Timeout with number for browser compatibility.
+  const conversionProcessRef = useRef<number[]>([]);
 
   useEffect(() => {
     return () => {
