@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -12,7 +13,6 @@ import TextToPDFConverter from './components/TextToPDFConverter';
 import WebPToPNGConverter from './components/WebPToPNGConverter';
 import MP4ToMP3Converter from './components/MP4ToMP3Converter';
 import PDFMerge from './components/PDFMerge';
-import AuthModal from './components/auth/AuthModal';
 import ToolNavigation, { Tool, toolsConfig, findToolConfig } from './components/core/ToolNavigation';
 import BannerAd from './components/monetization/BannerAd';
 import PageLoader from './components/core/PageLoader';
@@ -92,10 +92,7 @@ const App: React.FC = () => {
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeTool, setActiveTool] = useState<Tool>('youtubeToShorts');
-  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ email: string } | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
 
   useEffect(() => {
     // Simulate initial asset loading
@@ -132,7 +129,6 @@ const App: React.FC = () => {
         })
         .catch(error => {
           console.error('Service Worker Error', error);
-          setSubscriptionError('Failed to register service worker for notifications.');
         });
     }
   }, []);
@@ -141,7 +137,6 @@ const App: React.FC = () => {
     try {
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
-            setSubscriptionError('Push notification permission denied.');
             alert('You have denied notification permissions. To enable them, please go to your browser settings.');
             return;
         }
@@ -157,11 +152,9 @@ const App: React.FC = () => {
         // Example: await fetch('/api/subscribe', { method: 'POST', body: JSON.stringify(subscription), ... });
         
         setIsSubscribed(true);
-        setSubscriptionError(null);
         alert('Successfully subscribed to notifications!');
     } catch (error) {
         console.error('Failed to subscribe the user: ', error);
-        setSubscriptionError('Failed to subscribe to push notifications. See console for details.');
     }
 };
 
@@ -178,31 +171,12 @@ const App: React.FC = () => {
       <Header 
         isDarkMode={isDarkMode} 
         toggleDarkMode={toggleDarkMode}
-        user={currentUser}
-        onLoginClick={() => setAuthModalOpen(true)}
-        onLogout={() => setCurrentUser(null)}
         isSubscribed={isSubscribed}
         onSubscribe={subscribeToPushNotifications}
       />
-      
-      {isAuthModalOpen && (
-        <AuthModal 
-          onClose={() => setAuthModalOpen(false)}
-          onLoginSuccess={(email) => {
-            setCurrentUser({ email });
-            setAuthModalOpen(false);
-          }}
-        />
-      )}
 
       <main className="flex-grow container mx-auto px-4 py-8">
         <ToolNavigation activeTool={activeTool} setActiveTool={setActiveTool} />
-        {subscriptionError && (
-             <div className="mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
-                <p className="font-bold">Notification Status</p>
-                <p>{subscriptionError}</p>
-             </div>
-        )}
         <div className="mt-8">
             <ActiveToolComponent />
         </div>

@@ -1,20 +1,16 @@
 import React from 'react';
 import { SunIcon } from './icons/SunIcon';
 import { MoonIcon } from './icons/MoonIcon';
-import { UserIcon } from './icons/UserIcon';
 import { BellIcon } from './icons/BellIcon';
 
 interface HeaderProps {
   isDarkMode: boolean;
   toggleDarkMode: () => void;
-  user: { email: string } | null;
-  onLoginClick: () => void;
-  onLogout: () => void;
   isSubscribed: boolean;
   onSubscribe: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode, user, onLoginClick, onLogout, isSubscribed, onSubscribe }) => {
+const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode, isSubscribed, onSubscribe }) => {
   return (
     <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-20">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -27,28 +23,6 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode, user, onLog
             </h1>
         </div>
         <div className="flex items-center space-x-4">
-          {user ? (
-            <div className="relative group">
-               <button className="p-2 rounded-full text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700">
-                <UserIcon />
-               </button>
-               <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 invisible group-hover:visible">
-                  <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b dark:border-gray-600">
-                    <p className="font-semibold">Signed in as</p>
-                    <p className="truncate">{user.email}</p>
-                  </div>
-                  <a href="#" onClick={(e) => { e.preventDefault(); onLogout(); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Logout</a>
-               </div>
-            </div>
-          ) : (
-            <button
-              onClick={onLoginClick}
-              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Login / Sign Up
-            </button>
-          )}
-
           <button
             onClick={onSubscribe}
             disabled={isSubscribed}
